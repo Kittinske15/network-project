@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>The Best Subnet Calculator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"> 
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+    {% load static %} 
+    <link rel="stylesheet" type="text/css" href="{% static 'styles.css' %}">
+    
+<body style="font-family: 'Ubuntu', sans-serif; "> 
+    <div class="border border-dark" style="color:white; text-align: center; padding-top: 20px; padding-bottom: 20px; background-image: linear-gradient(-225deg, #231557 0%, #44107A 29%, #FF1361 67%, #FFF800 100%);">
+        <h1><strong>Subnet Calculator</strong></h1>
+    </div>
+    <div class="card ">
+            <div class="card-content" style="padding-left: 20px; padding-right: 20px;">
+                
+                <div align="center">
+                    <div class="divider"><br/><h2>
+                        <input id="box1" class="addr" ng-model="oct0" type="number" min="0" max="255" style="width:80px; height: 50px;" />.
+                        <input id="box2" class="addr" ng-model="oct1" type="number" min="0" max="255" style="width:80px; height: 50px;" />.
+                        <input id="box3" class="addr" ng-model="oct2" type="number" min="0" max="255" style="width:80px; height: 50px;" />.
+                        <input id="box4" class="addr" ng-model="oct3" type="number" min="0" max="255" style="width:80px; height: 50px;" />/
+                        <input id="cidr" class="addr" ng-model="prefix" type="number" min="0" max="32" style="width:80px; height: 50px;" />
+                        <button style=" margin-left: 60px; margin-bottom: 9px;" class="btn btn-info btn-lg" onclick='calculate();'>Calculate</button>
+                    </div>
+                </div></h2>
+                
+                <div style="padding-left:200px; padding-right: 200px;"><h3>
+                        <hr>
+                        <div class='result'>
+                        <span class=label>Standard Class :</span>
+                        <span class=value id=resClass></span>
+                        </div><br>
+                        <div class='result'>
+                        <span class=label>IP Address :</span>
+                        <span class=value id=resIP></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>Net Address :</span>
+                        <span class=value id=resNet></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>Subnet mask :</span>
+                        <span class=value id=resMask></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>Broadcast Address :</span>
+                        <span class=value id=resBC></span>
+                        </div><br>
+                        <div class='result'>
+                        <span class=label>Range :</span>
+                        <span class=value id=resRange></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>IP Binary :</span>
+                        <span class=value id=resBinIP></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>Mask Binary :</span>
+                        <span class=value id=resBinMask></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>Net Address Binary :</span>
+                        <span class=value id=resBinNet></span>
+                        </div>
+                        <div class='result'>
+                        <span class=label>BC Address Binary :</span>
+                        <span class=value id=resBinBC></span>
+                        </div>
+                    </div>
+            </div></h3>
+        </div>
+</body>
+
+<script type="text/javascript">
+function calculate(){
+    var box1=document.getElementById('box1').value;
+    var box2=document.getElementById('box2').value;
+    var box3=document.getElementById('box3').value;
+    var box4=document.getElementById('box4').value;
+    var cidr=document.getElementById('cidr').value;
+
+if((box1>=0 && box1<=255) && (box2>=0 && box2<=255) && (box3>=0 && box3<=255) && (box4>=0 && box4<=255) && (cidr>=0 && cidr<=32)){
+    document.getElementById('resIP').innerHTML=box1 + "." + box2 + "." + box3 + "." + box4;
+    var ipBinary={};
+    ipBinary[1]=String("00000000"+parseInt(box1).toString(2)).slice(-8);
+    ipBinary[2]=String("00000000"+parseInt(box2).toString(2)).slice(-8);
+    ipBinary[3]=String("00000000"+parseInt(box3).toString(2)).slice(-8);
+    ipBinary[4]=String("00000000"+parseInt(box4).toString(2)).slice(-8);
+
+    var Class="";
+    if(box1<=126) {
+        Class="A";
+    }else if (box1==127) {
+        Class="localhost"
+    }else if (box1>=128 && box1<=191) {
+        Class="B";
+    }else if (box1>=192 && box1<=223) {
+        Class="C";
+    }else if (box1>=224 && box1<=239) {
+        Class="D (Multicast Address)";
+    }else if (box1>=240 && box1<=254) {
+        Class="E (Reserved in the future.)";
+    }else {
+        Class="Out of range";
+    }
+
+var mask=cidr;
+var importantBlock=Math.ceil(mask/8);
+var importantBlockBinary=ipBinary[importantBlock];
+var maskBinaryBlockCount=mask%8;
+if(maskBinaryBlockCount==0)
+    importantBlock++;
+    var maskBinaryBlock="";
+    var maskBlock="";
+    for(var i=1;i<=8;i++){
+        if(maskBinaryBlockCount>=i){
+        maskBinaryBlock+="1";
+        }else{
+            maskBinaryBlock+="0";
+        }
+    }
+
+    maskBlock=parseInt(maskBinaryBlock,2);
+
+    var netBlockBinary="";
+    var bcBlockBinary="";
+    for(var i=1;i<=8;i++){
+        if(maskBinaryBlock.substr(i-1,1)=="1"){
+            netBlockBinary+=importantBlockBinary.substr(i-1,1);
+            bcBlockBinary+=importantBlockBinary.substr(i-1,1);
+        }else{
+            netBlockBinary+="0";
+            bcBlockBinary+="1";
+        }
+    }
+
+    var mask="";
+    var maskBinary="";
+    var net="";
+    var bc="";
+    var netBinary="";
+    var bcBinary="";
+    var first_range="";
+    var second_range="";
+
+    for(var i=1;i<=4;i++){
+        if(importantBlock>i) {
+            mask+="255";
+            maskBinary+="11111111";
+            netBinary+=ipBinary[i];
+            bcBinary+=ipBinary[i];
+            net+=parseInt(ipBinary[i],2);
+            bc+=parseInt(ipBinary[i],2);
+            first_range+=parseInt(ipBinary[i],2);
+            second_range+=parseInt(ipBinary[i],2);
+        }else if(importantBlock==i){
+            mask+=maskBlock;
+            maskBinary+=maskBinaryBlock;
+            netBinary+=netBlockBinary;
+            bcBinary+=bcBlockBinary;
+            net+=parseInt(netBlockBinary,2);
+            bc+=parseInt(bcBlockBinary,2);
+            first_range+=(parseInt(netBlockBinary,2)+1);
+            second_range+=(parseInt(bcBlockBinary,2)-1);
+        }else {
+            mask+=0;
+            maskBinary+="00000000";
+            netBinary+="00000000";
+            bcBinary+="11111111";
+            net+="0";
+            bc+="255";
+            first_range+=0;
+            second_range+=255;
+        }if(i<4){
+            mask+=".";
+            maskBinary+=".";
+            netBinary+=".";
+            bcBinary+=".";
+            net+=".";
+            bc+=".";
+            first_range+=".";
+            second_range+=".";
+        }
+    }
+
+    document.getElementById('resMask').innerHTML=mask;
+    document.getElementById('resNet').innerHTML=net;
+    document.getElementById('resBC').innerHTML=bc;
+    document.getElementById('resRange').innerHTML=first_range + " - " + second_range;
+    document.getElementById('resBinIP').innerHTML=ipBinary[1]+"."+ipBinary[2]+"."+ipBinary[3]+"."+ipBinary[4];
+    document.getElementById('resBinMask').innerHTML=maskBinary;
+    document.getElementById('resBinNet').innerHTML=netBinary;
+    document.getElementById('resBinBC').innerHTML=bcBinary;
+    document.getElementById('resClass').innerHTML=Class;
+    }else{
+        alert("invalid value");
+    }
+}
+</script>
